@@ -1,17 +1,33 @@
-import requests, re, socket, threading, queue
+import requests, re, socket, threading
+from bs4 import BeautifulSoup
 
-moobot = True
+moobot = False
 
 class Nodes:
     def __init__(self) -> None:
         self.url = "https://www.dan.me.uk/tornodes"
-        open("working.txt", "w").close()
+        self.nodes = []
+        open("./working.txt", "w").close()
+        open("./nodes.txt", "w").close()
 
     def _scrape(self) -> None:
-        res = requests.get(self.url, proxies=self.proxy)
-        if res.status_code == 200:
-            print(res.text)
-
+        res = requests.get(self.url)
+        try:
+            soup = BeautifulSoup(res.content, "html.parser")
+            a = soup.get_text().replace("\r\n", "")
+            b = a.split("Total number of nodes is: ")
+            c = b[1].split("Navigation")
+            d = c[0].splitlines()
+            d.pop(0)
+            d.pop(1)
+            d.pop(2)
+            with open("./nodes.txt", "a", encoding="utf-8") as f:
+                for line in d:
+                    if line == "\n" or line == "\r\n" or line == "":
+                        continue
+                    f.write(line.rstrip("\n")+"\n")
+        except:
+            print("Cannot scrape tor nodes right now... please wait 30 minutes then run the script again.")
 
     def _parse(self, file: str) -> list[str]:
         nodelist = []
@@ -28,50 +44,44 @@ class Nodes:
         print(f"Parsed: {len(nodelist)} Nodes")
         return nodelist
 
-    def _checknode(self, node: str, q: queue.Queue) -> bool:
+    def _checknode(self, node: str) -> bool:
         ip = node.split(":")[0]
         port = node.split(":")[1]
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(2)
+        sock.settimeout(4)
         try:
             sock.connect((ip, int(port)))
             print(f"Connected to {node}")
             sock.close()
-            q.put(True)
+            self.nodes.append(node)
             return True
         except:
             print(f"Dead {node}")
-            q.put(False)
             return False
 
-    def _writer(self, nodes: list[str]) -> None:
+    def _writer(self) -> None:
         FILE = open("working.txt", "a")
         if moobot == True:
-            for index, node in enumerate(nodes):
+            for index, node in enumerate(self.nodes):
                 ip = node.split(":")[0].replace(".", ",")
                 port = node.split(":")[1]
                 func = f"tor_add_sock({index}, INET_ADDR({ip}), HTONS({port}));"
                 FILE.write(f"{func}\n")
         else:
-            for node in nodes:
+            for node in self.nodes:
                 FILE.write(f"{node}\n")
 
 
     def _runner(self):
-        working = []
+        self._scrape()
         nodelist = self._parse("./nodes.txt")
-        my_queue = queue.Queue()
         print("Checking for valid nodes")
         for node in nodelist:
-            thread = threading.Thread(target=self._checknode, args=(node, my_queue))
+            thread = threading.Thread(target=self._checknode, args=(node,))
             thread.start()
-            if my_queue.get() == True:
-                working.append(node)
-            else:
-                pass
         thread.join()
         print("Writing to file")
-        self._writer(working)
+        self._writer()
 
 
 Nodes()._runner()
