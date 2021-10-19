@@ -5,7 +5,7 @@
 </p>
 
 
-TorScrape is a small but useful script made in python that wills scrape a website for active tor nodes, parse the html and then save the nodes in the correct format so that they can be used as proxies in other programs.
+TorScrape is a small but useful script made in python that scrapes a website for active tor nodes, parse the html and then save the nodes in the correct format so that they can be used as proxies in other programs.
 
 ## Installation
 Make sure [python](https://www.python.org/) is installed.
