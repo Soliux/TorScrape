@@ -1,7 +1,7 @@
 # TorScape
 
 <p align="center">
-    <img src="https://imgur.com/OQDjmiw">
+    <img src="https://ibb.co/C2XkJ2p">
 </p>
 
 
