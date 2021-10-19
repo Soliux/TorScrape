@@ -1,7 +1,7 @@
 # TorScape
 
 <p align="center">
-    <img src="https://imgur.com/OQDjmiw">
+    <img src="https://cdn.discordapp.com/attachments/884182157415817247/899809795773698118/Tor__anonymity_network_-Logo.wine-removebg-preview.png" width="320">
 </p>
 
 
